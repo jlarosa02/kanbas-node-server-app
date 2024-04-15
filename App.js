@@ -8,16 +8,29 @@ import ModuleRoutes from "./Kanbas/modules/routes.js";
 import cors from "cors";
 import session from "express-session";
 import "dotenv/config";
+
+const branches = ["main", "a6"];
+const strippedNetlifyUrl = process.env.NETLIFY_URL.replace("https://", "")
+const allowedOrigins = [process.env.LOCAL_FRONTEND_URL, ...branches.map((branch) => `https://${branch}--${strippedNetlifyUrl}`)];
+
 const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://127.0.0.1:27017/kanbas'
 const DB_NAME = process.env.DB_NAME;
 mongoose.connect(CONNECTION_STRING, { dbName: DB_NAME });
+
 const app = express();
-app.use(
-    cors({
-      credentials: true,
-      origin: process.env.FRONTEND_URL,
-    })
-   ); 
+
+app.use(cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+    }
+})); 
+
 const sessionOptions = {
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -31,6 +44,7 @@ const sessionOptions = {
       domain: process.env.HTTP_SERVER_DOMAIN,
     };
   }
+
 app.use(session(sessionOptions)); 
 app.use(express.json());
 ModuleRoutes(app);
