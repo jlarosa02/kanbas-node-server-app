@@ -9,7 +9,7 @@ import cors from "cors";
 import session from "express-session";
 import "dotenv/config";
 
-const branches = ["main", "a6"];
+const branches = ["main", "a5", "a6", "project"];
 const strippedNetlifyUrl = process.env.NETLIFY_URL.replace("https://", "")
 const allowedOrigins = [process.env.LOCAL_FRONTEND_URL, ...branches.map((branch) => `https://${branch}--${strippedNetlifyUrl}`)];
 
